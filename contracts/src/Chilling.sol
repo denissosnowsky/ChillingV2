@@ -27,7 +27,7 @@ contract Chilling {
     error Chilling__PostChangeFailed(string text, string image);
     error Chilling__PostCreationFailed(string text, string image);
 
-    /// @dev mappings maps address to its index in the appropriate array
+    /// mappings maps address to its index in the appropriate array
     struct Post {
         uint256 index;
         uint256 timestamp;
@@ -43,19 +43,19 @@ contract Chilling {
         address[] dislikesAddressesArray;
     }
 
-    /// @dev mappings maps address to its index in the appropriate array
+    /// mappings maps address to its index in the appropriate array
     struct Account {
         uint256 postsCount;
         uint256 followersCount;
-        uint256 followingCount;
+        uint256 followingsCount;
         address accountAddress;
         string name;
         string description;
         string image;
         mapping(address => uint256) followersMap;
-        mapping(address => uint256) followingMap;
+        mapping(address => uint256) followingsMap;
         address[] followersArray;
-        address[] followingArray;
+        address[] followingsArray;
     }
 
     /// used for getters return type
@@ -75,7 +75,7 @@ contract Chilling {
     struct AccountWithoutMappings {
         uint256 postsCount;
         uint256 followersCount;
-        uint256 followingCount;
+        uint256 followingsCount;
         address accountAddress;
         string name;
         string description;
@@ -150,7 +150,7 @@ contract Chilling {
         Account storage newAccount = s_addressToAccount[msg.sender];
         newAccount.postsCount = 0;
         newAccount.followersCount = 0;
-        newAccount.followingCount = 0;
+        newAccount.followingsCount = 0;
         newAccount.accountAddress = msg.sender;
         newAccount.name = _name;
         newAccount.description = _description;
@@ -199,13 +199,13 @@ contract Chilling {
         Account storage sender = s_addressToAccount[msg.sender];
         Account storage to = s_addressToAccount[_to];
 
-        if (sender.followingMap[_to] > 0) {
+        if (sender.followingsMap[_to] > 0) {
             revert Chilling__AlreadyFollowing();
         }
 
-        sender.followingCount++;
-        sender.followingArray.push(_to);
-        sender.followingMap[_to] = sender.followingArray.length;
+        sender.followingsCount++;
+        sender.followingsArray.push(_to);
+        sender.followingsMap[_to] = sender.followingsArray.length;
 
         to.followersCount++;
         to.followersArray.push(msg.sender);
@@ -220,21 +220,21 @@ contract Chilling {
         Account storage sender = s_addressToAccount[msg.sender];
         Account storage to = s_addressToAccount[_to];
 
-        if (sender.followingMap[_to] == 0) {
+        if (sender.followingsMap[_to] == 0) {
             revert Chilling__AlreadyNotFollowing();
         }
 
-        if (sender.followingCount > 1) {
-            uint256 indexOfFollowingToUnfollow = sender.followingMap[_to];
-            address lastFollowing = sender.followingArray[
-                sender.followingArray.length - 1
+        if (sender.followingsCount > 1) {
+            uint256 indexOfFollowingToUnfollow = sender.followingsMap[_to];
+            address lastFollowing = sender.followingsArray[
+                sender.followingsArray.length - 1
             ];
-            sender.followingMap[_to] = 0;
-            sender.followingArray[indexOfFollowingToUnfollow] = lastFollowing;
-            sender.followingMap[lastFollowing] = indexOfFollowingToUnfollow;
+            sender.followingsMap[_to] = 0;
+            sender.followingsArray[indexOfFollowingToUnfollow] = lastFollowing;
+            sender.followingsMap[lastFollowing] = indexOfFollowingToUnfollow;
         }
-        sender.followingCount--;
-        sender.followingArray.pop();
+        sender.followingsCount--;
+        sender.followingsArray.pop();
 
         if (to.followersCount > 1) {
             uint256 indexOfFollowerToUnfollow = to.followersMap[msg.sender];
@@ -434,12 +434,12 @@ contract Chilling {
             AccountWithoutMappings({
                 postsCount: user.postsCount,
                 followersCount: user.followersCount,
-                followingCount: user.followingCount,
+                followingsCount: user.followingsCount,
                 accountAddress: user.accountAddress,
                 name: user.name,
                 description: user.description,
                 image: user.image,
-                isSenderFollowing: sender.followingMap[_account] > 0,
+                isSenderFollowing: sender.followingsMap[_account] > 0,
                 isSenderFollower: sender.followersMap[_account] > 0
             });
     }
@@ -515,9 +515,9 @@ contract Chilling {
         uint256 _cursor,
         uint256 _limit
     ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        uint256 followingsLength = s_addressToAccount[_account].followingCount;
+        uint256 followingsLength = s_addressToAccount[_account].followingsCount;
         address[] memory followingsArray = s_addressToAccount[_account]
-            .followingArray;
+            .followingsArray;
 
         return
             getAccountsWithPagination(
@@ -606,7 +606,7 @@ contract Chilling {
             accountsToReturn[count].accountAddress = currentAcount
                 .accountAddress;
             accountsToReturn[count].isSenderFollowing =
-                sender.followingMap[currentAccountAddress] > 0;
+                sender.followingsMap[currentAccountAddress] > 0;
             accountsToReturn[count].isSenderFollower =
                 sender.followersMap[currentAccountAddress] > 0;
 
