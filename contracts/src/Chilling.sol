@@ -8,6 +8,7 @@ pragma solidity ^0.8.18;
  * @notice This contract makes possible to register user and create posts on-chain.
  * Chat is implemented off-chain. Main idea it to create uncensored posts from accounts.
  * @dev IPFS is used for storing images
+ * All array getters return data witn pagination.
  */
 contract Chilling {
     error Chilling__CommentIsEmpty();
@@ -26,6 +27,7 @@ contract Chilling {
     error Chilling__PostChangeFailed(string text, string image);
     error Chilling__PostCreationFailed(string text, string image);
 
+    /// @dev mappings maps address to its index in the appropriate array
     struct Post {
         uint256 index;
         uint256 timestamp;
@@ -41,7 +43,9 @@ contract Chilling {
         address[] dislikesAddressesArray;
     }
 
+    /// @dev mappings maps address to its index in the appropriate array
     struct Account {
+        uint256 postsCount;
         uint256 followersCount;
         uint256 followingCount;
         address accountAddress;
@@ -52,6 +56,41 @@ contract Chilling {
         mapping(address => uint256) followingMap;
         address[] followersArray;
         address[] followingArray;
+    }
+
+    /// used for getters return type
+    struct PostWithoutMappings {
+        uint256 index;
+        uint256 timestamp;
+        uint256 likesCount;
+        uint256 dislikesCount;
+        address author;
+        string image;
+        string text;
+        bool isLikedBySender;
+        bool isDislikedBySender;
+    }
+
+    /// used for getters return type
+    struct AccountWithoutMappings {
+        uint256 postsCount;
+        uint256 followersCount;
+        uint256 followingCount;
+        address accountAddress;
+        string name;
+        string description;
+        string image;
+        bool isSenderFollowing;
+        bool isSenderFollower;
+    }
+
+    /// used for getters return type
+    struct AccoutnShort {
+        string name;
+        string image;
+        address accountAddress;
+        bool isSenderFollowing;
+        bool isSenderFollower;
     }
 
     uint256 private s_accountsCount;
@@ -109,6 +148,7 @@ contract Chilling {
         }
 
         Account storage newAccount = s_addressToAccount[msg.sender];
+        newAccount.postsCount = 0;
         newAccount.followersCount = 0;
         newAccount.followingCount = 0;
         newAccount.accountAddress = msg.sender;
@@ -231,6 +271,8 @@ contract Chilling {
         posts[postsLength].image = _image;
         posts[postsLength].text = _text;
         posts[postsLength].author = msg.sender;
+
+        s_addressToAccount[msg.sender].postsCount++;
 
         emit PostCreated(_text, _image);
     }
@@ -378,22 +420,270 @@ contract Chilling {
 
     /// view getters
 
-    function accountsCount() external view returns (uint256) {
+    function getAccountsCount() external view returns (uint256) {
         return s_accountsCount;
     }
 
-    function accountInfo(address account)
-        external
-        view
-        returns (uint256, uint256, string memory, string memory, string memory)
-    {
-        Account storage user = s_addressToAccount[account];
-        return (
-            user.followersCount,
-            user.followingCount,
-            user.name,
-            user.description,
-            user.image
-        );
+    function getAccountInfo(
+        address _account
+    ) external view returns (AccountWithoutMappings memory) {
+        Account storage user = s_addressToAccount[_account];
+        Account storage sender = s_addressToAccount[msg.sender];
+
+        return
+            AccountWithoutMappings({
+                postsCount: user.postsCount,
+                followersCount: user.followersCount,
+                followingCount: user.followingCount,
+                accountAddress: user.accountAddress,
+                name: user.name,
+                description: user.description,
+                image: user.image,
+                isSenderFollowing: sender.followingMap[_account] > 0,
+                isSenderFollower: sender.followersMap[_account] > 0
+            });
+    }
+
+    function getAccountPosts(
+        address _account,
+        uint256 _cursor,
+        uint256 _limit
+    ) external view returns (PostWithoutMappings[] memory posts, bool hasMore) {
+        PostWithoutMappings[] memory postsToReturn;
+
+        uint256 count = 0;
+        uint256 postsLength = s_addressToPosts[_account].length;
+        int256 startIndex = int256(postsLength) - 1 - int256(_cursor);
+        int256 endIndex = startIndex - int256(_limit) + 1;
+        uint256 loopLimit;
+
+        if (startIndex < 0) {
+            return (new PostWithoutMappings[](0), false);
+        }
+
+        if (endIndex < 0) {
+            loopLimit = 0;
+            postsToReturn = new PostWithoutMappings[](
+                uint256(endIndex) + _limit
+            );
+        } else {
+            loopLimit = uint256(endIndex);
+            postsToReturn = new PostWithoutMappings[](_limit);
+        }
+
+        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
+            Post storage post = s_addressToPosts[_account][i];
+
+            postsToReturn[count].index = post.index;
+            postsToReturn[count].timestamp = post.timestamp;
+            postsToReturn[count].likesCount = post.likesCount;
+            postsToReturn[count].dislikesCount = post.dislikesCount;
+            postsToReturn[count].author = post.author;
+            postsToReturn[count].image = post.image;
+            postsToReturn[count].text = post.text;
+            postsToReturn[count].isLikedBySender =
+                post.likesAddressesMap[msg.sender] > 0;
+            postsToReturn[count].isDislikedBySender =
+                post.dislikesAddressesMap[msg.sender] > 0;
+
+            count++;
+        }
+
+        return (postsToReturn, endIndex <= 0 ? false : true);
+    }
+
+    function getFollowers(
+        address _account,
+        uint256 _cursor,
+        uint256 _limit
+    ) external view returns (AccoutnShort[] memory, bool hasMore) {
+        AccoutnShort[] memory accountsToReturn;
+        Account storage sender = s_addressToAccount[msg.sender];
+
+        uint256 count = 0;
+        uint256 accountsLength = s_addressToAccount[_account].followersCount;
+        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
+        int256 endIndex = startIndex - int256(_limit) + 1;
+        uint256 loopLimit;
+
+        if (startIndex < 0) {
+            return (new AccoutnShort[](0), false);
+        }
+
+        if (endIndex < 0) {
+            loopLimit = 0;
+            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
+        } else {
+            loopLimit = uint256(endIndex);
+            accountsToReturn = new AccoutnShort[](_limit);
+        }
+
+        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
+            address currentAccountAddress = s_addressToAccount[_account]
+                .followersArray[i];
+            Account storage currentAcount = s_addressToAccount[
+                currentAccountAddress
+            ];
+
+            accountsToReturn[count].name = currentAcount.name;
+            accountsToReturn[count].image = currentAcount.image;
+            accountsToReturn[count].accountAddress = currentAcount
+                .accountAddress;
+            accountsToReturn[count].isSenderFollowing =
+                sender.followingMap[currentAccountAddress] > 0;
+            accountsToReturn[count].isSenderFollower =
+                sender.followersMap[currentAccountAddress] > 0;
+
+            count++;
+        }
+
+        return (accountsToReturn, endIndex <= 0 ? false : true);
+    }
+
+    function getFollowing(
+        address _account,
+        uint256 _cursor,
+        uint256 _limit
+    ) external view returns (AccoutnShort[] memory, bool hasMore) {
+        AccoutnShort[] memory accountsToReturn;
+        Account storage sender = s_addressToAccount[msg.sender];
+
+        uint256 count = 0;
+        uint256 accountsLength = s_addressToAccount[_account].followingCount;
+        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
+        int256 endIndex = startIndex - int256(_limit) + 1;
+        uint256 loopLimit;
+
+        if (startIndex < 0) {
+            return (new AccoutnShort[](0), false);
+        }
+
+        if (endIndex < 0) {
+            loopLimit = 0;
+            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
+        } else {
+            loopLimit = uint256(endIndex);
+            accountsToReturn = new AccoutnShort[](_limit);
+        }
+
+        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
+            address currentAccountAddress = s_addressToAccount[_account]
+                .followingArray[i];
+            Account storage currentAcount = s_addressToAccount[
+                currentAccountAddress
+            ];
+
+            accountsToReturn[count].name = currentAcount.name;
+            accountsToReturn[count].image = currentAcount.image;
+            accountsToReturn[count].accountAddress = currentAcount
+                .accountAddress;
+            accountsToReturn[count].isSenderFollowing =
+                sender.followingMap[currentAccountAddress] > 0;
+            accountsToReturn[count].isSenderFollower =
+                sender.followersMap[currentAccountAddress] > 0;
+
+            count++;
+        }
+
+        return (accountsToReturn, endIndex <= 0 ? false : true);
+    }
+
+    function getPostLikers(
+        address _account,
+        uint256 _index,
+        uint256 _cursor,
+        uint256 _limit
+    ) external view returns (AccoutnShort[] memory, bool hasMore) {
+        AccoutnShort[] memory accountsToReturn;
+        Account storage sender = s_addressToAccount[msg.sender];
+
+        uint256 count = 0;
+        uint256 accountsLength = s_addressToPosts[_account][_index].likesCount;
+        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
+        int256 endIndex = startIndex - int256(_limit) + 1;
+        uint256 loopLimit;
+
+        if (startIndex < 0) {
+            return (new AccoutnShort[](0), false);
+        }
+
+        if (endIndex < 0) {
+            loopLimit = 0;
+            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
+        } else {
+            loopLimit = uint256(endIndex);
+            accountsToReturn = new AccoutnShort[](_limit);
+        }
+
+        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
+            address currentAccountAddress = s_addressToPosts[_account][_index]
+                .likesAddressesArray[i];
+            Account storage currentAcount = s_addressToAccount[
+                currentAccountAddress
+            ];
+
+            accountsToReturn[count].name = currentAcount.name;
+            accountsToReturn[count].image = currentAcount.image;
+            accountsToReturn[count].accountAddress = currentAcount
+                .accountAddress;
+            accountsToReturn[count].isSenderFollowing =
+                sender.followingMap[currentAccountAddress] > 0;
+            accountsToReturn[count].isSenderFollower =
+                sender.followersMap[currentAccountAddress] > 0;
+
+            count++;
+        }
+
+        return (accountsToReturn, endIndex <= 0 ? false : true);
+    }
+
+    function getPostDislikers(
+        address _account,
+        uint256 _index,
+        uint256 _cursor,
+        uint256 _limit
+    ) external view returns (AccoutnShort[] memory, bool hasMore) {
+        AccoutnShort[] memory accountsToReturn;
+        Account storage sender = s_addressToAccount[msg.sender];
+
+        uint256 count = 0;
+        uint256 accountsLength = s_addressToPosts[_account][_index]
+            .dislikesCount;
+        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
+        int256 endIndex = startIndex - int256(_limit) + 1;
+        uint256 loopLimit;
+
+        if (startIndex < 0) {
+            return (new AccoutnShort[](0), false);
+        }
+
+        if (endIndex < 0) {
+            loopLimit = 0;
+            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
+        } else {
+            loopLimit = uint256(endIndex);
+            accountsToReturn = new AccoutnShort[](_limit);
+        }
+
+        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
+            address currentAccountAddress = s_addressToPosts[_account][_index]
+                .dislikesAddressesArray[i];
+            Account storage currentAcount = s_addressToAccount[
+                currentAccountAddress
+            ];
+
+            accountsToReturn[count].name = currentAcount.name;
+            accountsToReturn[count].image = currentAcount.image;
+            accountsToReturn[count].accountAddress = currentAcount
+                .accountAddress;
+            accountsToReturn[count].isSenderFollowing =
+                sender.followingMap[currentAccountAddress] > 0;
+            accountsToReturn[count].isSenderFollower =
+                sender.followersMap[currentAccountAddress] > 0;
+
+            count++;
+        }
+
+        return (accountsToReturn, endIndex <= 0 ? false : true);
     }
 }
