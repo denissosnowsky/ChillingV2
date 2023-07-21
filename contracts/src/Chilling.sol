@@ -375,4 +375,25 @@ contract Chilling {
 
         emit CommentCreated();
     }
+
+    /// view getters
+
+    function accountsCount() external view returns (uint256) {
+        return s_accountsCount;
+    }
+
+    function accountInfo(address account)
+        external
+        view
+        returns (uint256, uint256, string memory, string memory, string memory)
+    {
+        Account storage user = s_addressToAccount[account];
+        return (
+            user.followersCount,
+            user.followingCount,
+            user.name,
+            user.description,
+            user.image
+        );
+    }
 }
