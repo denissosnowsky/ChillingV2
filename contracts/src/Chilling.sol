@@ -497,47 +497,17 @@ contract Chilling {
         uint256 _cursor,
         uint256 _limit
     ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        AccoutnShort[] memory accountsToReturn;
-        Account storage sender = s_addressToAccount[msg.sender];
+        uint256 followersLength = s_addressToAccount[_account].followersCount;
+        address[] memory followersArray = s_addressToAccount[_account]
+            .followersArray;
 
-        uint256 count = 0;
-        uint256 accountsLength = s_addressToAccount[_account].followersCount;
-        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
-        int256 endIndex = startIndex - int256(_limit) + 1;
-        uint256 loopLimit;
-
-        if (startIndex < 0) {
-            return (new AccoutnShort[](0), false);
-        }
-
-        if (endIndex < 0) {
-            loopLimit = 0;
-            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
-        } else {
-            loopLimit = uint256(endIndex);
-            accountsToReturn = new AccoutnShort[](_limit);
-        }
-
-        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            address currentAccountAddress = s_addressToAccount[_account]
-                .followersArray[i];
-            Account storage currentAcount = s_addressToAccount[
-                currentAccountAddress
-            ];
-
-            accountsToReturn[count].name = currentAcount.name;
-            accountsToReturn[count].image = currentAcount.image;
-            accountsToReturn[count].accountAddress = currentAcount
-                .accountAddress;
-            accountsToReturn[count].isSenderFollowing =
-                sender.followingMap[currentAccountAddress] > 0;
-            accountsToReturn[count].isSenderFollower =
-                sender.followersMap[currentAccountAddress] > 0;
-
-            count++;
-        }
-
-        return (accountsToReturn, endIndex <= 0 ? false : true);
+        return
+            getAccountsWithPagination(
+                _cursor,
+                _limit,
+                followersLength,
+                followersArray
+            );
     }
 
     function getFollowing(
@@ -545,47 +515,17 @@ contract Chilling {
         uint256 _cursor,
         uint256 _limit
     ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        AccoutnShort[] memory accountsToReturn;
-        Account storage sender = s_addressToAccount[msg.sender];
+        uint256 followingsLength = s_addressToAccount[_account].followingCount;
+        address[] memory followingsArray = s_addressToAccount[_account]
+            .followingArray;
 
-        uint256 count = 0;
-        uint256 accountsLength = s_addressToAccount[_account].followingCount;
-        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
-        int256 endIndex = startIndex - int256(_limit) + 1;
-        uint256 loopLimit;
-
-        if (startIndex < 0) {
-            return (new AccoutnShort[](0), false);
-        }
-
-        if (endIndex < 0) {
-            loopLimit = 0;
-            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
-        } else {
-            loopLimit = uint256(endIndex);
-            accountsToReturn = new AccoutnShort[](_limit);
-        }
-
-        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            address currentAccountAddress = s_addressToAccount[_account]
-                .followingArray[i];
-            Account storage currentAcount = s_addressToAccount[
-                currentAccountAddress
-            ];
-
-            accountsToReturn[count].name = currentAcount.name;
-            accountsToReturn[count].image = currentAcount.image;
-            accountsToReturn[count].accountAddress = currentAcount
-                .accountAddress;
-            accountsToReturn[count].isSenderFollowing =
-                sender.followingMap[currentAccountAddress] > 0;
-            accountsToReturn[count].isSenderFollower =
-                sender.followersMap[currentAccountAddress] > 0;
-
-            count++;
-        }
-
-        return (accountsToReturn, endIndex <= 0 ? false : true);
+        return
+            getAccountsWithPagination(
+                _cursor,
+                _limit,
+                followingsLength,
+                followingsArray
+            );
     }
 
     function getPostLikers(
@@ -594,47 +534,18 @@ contract Chilling {
         uint256 _cursor,
         uint256 _limit
     ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        AccoutnShort[] memory accountsToReturn;
-        Account storage sender = s_addressToAccount[msg.sender];
+        uint256 likersLength = s_addressToPosts[_account][_index].likesCount;
+        address[] memory likesAddressesArray = s_addressToPosts[_account][
+            _index
+        ].likesAddressesArray;
 
-        uint256 count = 0;
-        uint256 accountsLength = s_addressToPosts[_account][_index].likesCount;
-        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
-        int256 endIndex = startIndex - int256(_limit) + 1;
-        uint256 loopLimit;
-
-        if (startIndex < 0) {
-            return (new AccoutnShort[](0), false);
-        }
-
-        if (endIndex < 0) {
-            loopLimit = 0;
-            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
-        } else {
-            loopLimit = uint256(endIndex);
-            accountsToReturn = new AccoutnShort[](_limit);
-        }
-
-        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            address currentAccountAddress = s_addressToPosts[_account][_index]
-                .likesAddressesArray[i];
-            Account storage currentAcount = s_addressToAccount[
-                currentAccountAddress
-            ];
-
-            accountsToReturn[count].name = currentAcount.name;
-            accountsToReturn[count].image = currentAcount.image;
-            accountsToReturn[count].accountAddress = currentAcount
-                .accountAddress;
-            accountsToReturn[count].isSenderFollowing =
-                sender.followingMap[currentAccountAddress] > 0;
-            accountsToReturn[count].isSenderFollower =
-                sender.followersMap[currentAccountAddress] > 0;
-
-            count++;
-        }
-
-        return (accountsToReturn, endIndex <= 0 ? false : true);
+        return
+            getAccountsWithPagination(
+                _cursor,
+                _limit,
+                likersLength,
+                likesAddressesArray
+            );
     }
 
     function getPostDislikers(
@@ -643,13 +554,32 @@ contract Chilling {
         uint256 _cursor,
         uint256 _limit
     ) external view returns (AccoutnShort[] memory, bool hasMore) {
+        uint256 dislikersLength = s_addressToPosts[_account][_index]
+            .dislikesCount;
+        address[] memory dislikesAddressesArray = s_addressToPosts[_account][
+            _index
+        ].dislikesAddressesArray;
+
+        return
+            getAccountsWithPagination(
+                _cursor,
+                _limit,
+                dislikersLength,
+                dislikesAddressesArray
+            );
+    }
+
+    function getAccountsWithPagination(
+        uint256 _cursor,
+        uint256 _limit,
+        uint256 _accountsLength,
+        address[] memory _addressesArrayToLoop
+    ) internal view returns (AccoutnShort[] memory, bool hasMore) {
         AccoutnShort[] memory accountsToReturn;
         Account storage sender = s_addressToAccount[msg.sender];
 
         uint256 count = 0;
-        uint256 accountsLength = s_addressToPosts[_account][_index]
-            .dislikesCount;
-        int256 startIndex = int256(accountsLength) - 1 - int256(_cursor);
+        int256 startIndex = int256(_accountsLength) - 1 - int256(_cursor);
         int256 endIndex = startIndex - int256(_limit) + 1;
         uint256 loopLimit;
 
@@ -666,8 +596,7 @@ contract Chilling {
         }
 
         for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            address currentAccountAddress = s_addressToPosts[_account][_index]
-                .dislikesAddressesArray[i];
+            address currentAccountAddress = _addressesArrayToLoop[i];
             Account storage currentAcount = s_addressToAccount[
                 currentAccountAddress
             ];
