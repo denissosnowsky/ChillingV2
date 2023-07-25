@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.18;
 
+import {ChillingStruct} from "./ChillingStruct.sol";
+
 /**
  * @title A contract for social media named Chilling
  * @author Den Sosnovskyi
@@ -10,7 +12,7 @@ pragma solidity ^0.8.18;
  * @dev IPFS is used for storing images
  * All array getters return data witn pagination.
  */
-contract Chilling {
+contract Chilling is ChillingStruct {
     error Chilling__CommentIsEmpty();
     error Chilling__TransferFailed();
     error Chilling__PostTextIsEmpty();
@@ -24,78 +26,13 @@ contract Chilling {
     error Chilling__SenderIsNotSignedUp();
     error Chilling__UserNameIsNotDefined();
     error Chilling__ReceiverIsNotSignedUp();
+    error Chilling__PostDoesNotExists();
     error Chilling__PostChangeFailed(string text, string image);
     error Chilling__PostCreationFailed(string text, string image);
 
-    /// mappings maps address to its index in the appropriate array
-    struct Post {
-        uint256 index;
-        uint256 timestamp;
-        uint256 likesCount;
-        uint256 dislikesCount;
-        address author;
-        string image;
-        string text;
-        string[] comments;
-        mapping(address => uint256) likesAddressesMap;
-        mapping(address => uint256) dislikesAddressesMap;
-        address[] likesAddressesArray;
-        address[] dislikesAddressesArray;
-    }
-
-    /// mappings maps address to its index in the appropriate array
-    struct Account {
-        uint256 postsCount;
-        uint256 followersCount;
-        uint256 followingsCount;
-        address accountAddress;
-        string name;
-        string description;
-        string image;
-        mapping(address => uint256) followersMap;
-        mapping(address => uint256) followingsMap;
-        address[] followersArray;
-        address[] followingsArray;
-    }
-
-    /// used for getters return type
-    struct PostWithoutMappings {
-        uint256 index;
-        uint256 timestamp;
-        uint256 likesCount;
-        uint256 dislikesCount;
-        address author;
-        string image;
-        string text;
-        bool isLikedBySender;
-        bool isDislikedBySender;
-    }
-
-    /// used for getters return type
-    struct AccountWithoutMappings {
-        uint256 postsCount;
-        uint256 followersCount;
-        uint256 followingsCount;
-        address accountAddress;
-        string name;
-        string description;
-        string image;
-        bool isSenderFollowing;
-        bool isSenderFollower;
-    }
-
-    /// used for getters return type
-    struct AccoutnShort {
-        string name;
-        string image;
-        address accountAddress;
-        bool isSenderFollowing;
-        bool isSenderFollower;
-    }
-
     uint256 private s_accountsCount;
 
-    mapping(address => Account) private s_addressToAccount;
+    mapping(address => UserAccount) private s_addressToAccount;
     mapping(address => Post[]) private s_addressToPosts;
 
     event PostLiked();
@@ -147,7 +84,7 @@ contract Chilling {
             revert Chilling__UserNameIsNotDefined();
         }
 
-        Account storage newAccount = s_addressToAccount[msg.sender];
+        UserAccount storage newAccount = s_addressToAccount[msg.sender];
         newAccount.postsCount = 0;
         newAccount.followersCount = 0;
         newAccount.followingsCount = 0;
@@ -196,8 +133,8 @@ contract Chilling {
     function follow(
         address _to
     ) external onlySignedUpSender onlySignedUpReceiver(_to) {
-        Account storage sender = s_addressToAccount[msg.sender];
-        Account storage to = s_addressToAccount[_to];
+        UserAccount storage sender = s_addressToAccount[msg.sender];
+        UserAccount storage to = s_addressToAccount[_to];
 
         if (sender.followingsMap[_to] > 0) {
             revert Chilling__AlreadyFollowing();
@@ -205,6 +142,7 @@ contract Chilling {
 
         sender.followingsCount++;
         sender.followingsArray.push(_to);
+        /// we use length, not length-1, so that 0 index was indicating not existant address is the map
         sender.followingsMap[_to] = sender.followingsArray.length;
 
         to.followersCount++;
@@ -217,34 +155,28 @@ contract Chilling {
     function unfollow(
         address _to
     ) external onlySignedUpSender onlySignedUpReceiver(_to) {
-        Account storage sender = s_addressToAccount[msg.sender];
-        Account storage to = s_addressToAccount[_to];
+        UserAccount storage sender = s_addressToAccount[msg.sender];
+        UserAccount storage to = s_addressToAccount[_to];
 
         if (sender.followingsMap[_to] == 0) {
             revert Chilling__AlreadyNotFollowing();
         }
 
-        if (sender.followingsCount > 1) {
-            uint256 indexOfFollowingToUnfollow = sender.followingsMap[_to];
-            address lastFollowing = sender.followingsArray[
-                sender.followingsArray.length - 1
-            ];
-            sender.followingsMap[_to] = 0;
-            sender.followingsArray[indexOfFollowingToUnfollow] = lastFollowing;
-            sender.followingsMap[lastFollowing] = indexOfFollowingToUnfollow;
-        }
+        uint256 indexOfFollowingToUnfollow = sender.followingsMap[_to] - 1;
+        address lastFollowing = sender.followingsArray[
+            sender.followingsArray.length - 1
+        ];
+        sender.followingsArray[indexOfFollowingToUnfollow] = lastFollowing;
+        sender.followingsMap[lastFollowing] = indexOfFollowingToUnfollow + 1;
+        sender.followingsMap[_to] = 0;
         sender.followingsCount--;
         sender.followingsArray.pop();
 
-        if (to.followersCount > 1) {
-            uint256 indexOfFollowerToUnfollow = to.followersMap[msg.sender];
-            address lastFollower = to.followersArray[
-                to.followersArray.length - 1
-            ];
-            to.followersMap[msg.sender] = 0;
-            to.followersArray[indexOfFollowerToUnfollow] = lastFollower;
-            to.followersMap[lastFollower] = indexOfFollowerToUnfollow;
-        }
+        uint256 indexOfFollowerToUnfollow = to.followersMap[msg.sender] - 1;
+        address lastFollower = to.followersArray[to.followersArray.length - 1];
+        to.followersArray[indexOfFollowerToUnfollow] = lastFollower;
+        to.followersMap[lastFollower] = indexOfFollowerToUnfollow + 1;
+        to.followersMap[msg.sender] = 0;
         to.followersCount--;
         to.followersArray.pop();
 
@@ -289,7 +221,13 @@ contract Chilling {
             revert Chilling__PostChangeFailed(_text, _image);
         }
 
-        Post storage post = s_addressToPosts[msg.sender][_index];
+        Post[] storage posts = s_addressToPosts[msg.sender];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        Post storage post = posts[_index];
 
         if (textLength != 0) {
             post.text = _text;
@@ -306,7 +244,13 @@ contract Chilling {
         address _author,
         uint256 _index
     ) external onlySignedUpSender onlySignedUpReceiver(_author) {
-        Post storage post = s_addressToPosts[_author][_index];
+        Post[] storage posts = s_addressToPosts[_author];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        Post storage post = posts[_index];
 
         if (post.likesAddressesMap[msg.sender] > 0) {
             revert Chilling__PostAlreadyLiked();
@@ -327,7 +271,13 @@ contract Chilling {
         address _author,
         uint256 _index
     ) external onlySignedUpSender onlySignedUpReceiver(_author) {
-        Post storage post = s_addressToPosts[_author][_index];
+        Post[] storage posts = s_addressToPosts[_author];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        Post storage post = posts[_index];
 
         if (post.dislikesAddressesMap[msg.sender] > 0) {
             revert Chilling__PostAlreadyDisliked();
@@ -350,23 +300,27 @@ contract Chilling {
         address _author,
         uint256 _index
     ) public onlySignedUpSender onlySignedUpReceiver(_author) {
-        Post storage post = s_addressToPosts[_author][_index];
+        Post[] storage posts = s_addressToPosts[_author];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        Post storage post = posts[_index];
 
         if (post.likesAddressesMap[msg.sender] == 0) {
             revert Chilling__PostIsNotLiked();
         }
 
-        if (post.likesCount > 1) {
-            uint256 indexOfSenderAddressInLikes = post.likesAddressesMap[
-                msg.sender
-            ];
-            address lastLiker = post.likesAddressesArray[
-                post.likesAddressesArray.length - 1
-            ];
-            post.likesAddressesMap[msg.sender] = 0;
-            post.likesAddressesArray[indexOfSenderAddressInLikes] = lastLiker;
-            post.likesAddressesMap[lastLiker] = indexOfSenderAddressInLikes;
-        }
+        uint256 indexOfSenderAddressInLikes = post.likesAddressesMap[
+            msg.sender
+        ] - 1;
+        address lastLiker = post.likesAddressesArray[
+            post.likesAddressesArray.length - 1
+        ];
+        post.likesAddressesArray[indexOfSenderAddressInLikes] = lastLiker;
+        post.likesAddressesMap[lastLiker] = indexOfSenderAddressInLikes + 1;
+        post.likesAddressesMap[msg.sender] = 0;
         post.likesCount--;
         post.likesAddressesArray.pop();
 
@@ -377,27 +331,31 @@ contract Chilling {
         address _author,
         uint256 _index
     ) public onlySignedUpSender onlySignedUpReceiver(_author) {
-        Post storage post = s_addressToPosts[_author][_index];
+        Post[] storage posts = s_addressToPosts[_author];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        Post storage post = posts[_index];
 
         if (post.dislikesAddressesMap[msg.sender] == 0) {
             revert Chilling__PostIsNotDisliked();
         }
 
-        if (post.dislikesCount > 1) {
-            uint256 indexOfSenderAddressInDislikes = post.dislikesAddressesMap[
-                msg.sender
-            ];
-            address lastDisliker = post.dislikesAddressesArray[
-                post.dislikesAddressesArray.length - 1
-            ];
-            post.dislikesAddressesMap[msg.sender] = 0;
-            post.dislikesAddressesArray[
-                indexOfSenderAddressInDislikes
-            ] = lastDisliker;
-            post.dislikesAddressesMap[
-                lastDisliker
-            ] = indexOfSenderAddressInDislikes;
-        }
+        uint256 indexOfSenderAddressInDislikes = post.dislikesAddressesMap[
+            msg.sender
+        ] - 1;
+        address lastDisliker = post.dislikesAddressesArray[
+            post.dislikesAddressesArray.length - 1
+        ];
+        post.dislikesAddressesArray[
+            indexOfSenderAddressInDislikes
+        ] = lastDisliker;
+        post.dislikesAddressesMap[lastDisliker] =
+            indexOfSenderAddressInDislikes +
+            1;
+        post.dislikesAddressesMap[msg.sender] = 0;
         post.dislikesCount--;
         post.dislikesAddressesArray.pop();
 
@@ -413,7 +371,13 @@ contract Chilling {
             revert Chilling__CommentIsEmpty();
         }
 
-        s_addressToPosts[_author][_index].comments.push(_text);
+        Post[] storage posts = s_addressToPosts[_author];
+
+        if (posts.length <= _index) {
+            revert Chilling__PostDoesNotExists();
+        }
+
+        posts[_index].comments.push(Comment({text: _text, author: msg.sender}));
 
         emit CommentCreated();
     }
@@ -426,12 +390,18 @@ contract Chilling {
 
     function getAccountInfo(
         address _account
-    ) external view returns (AccountWithoutMappings memory) {
-        Account storage user = s_addressToAccount[_account];
-        Account storage sender = s_addressToAccount[msg.sender];
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (UserAccountWithoutMappings memory)
+    {
+        UserAccount storage user = s_addressToAccount[_account];
+        UserAccount storage sender = s_addressToAccount[msg.sender];
 
         return
-            AccountWithoutMappings({
+            UserAccountWithoutMappings({
                 postsCount: user.postsCount,
                 followersCount: user.followersCount,
                 followingsCount: user.followingsCount,
@@ -448,7 +418,13 @@ contract Chilling {
         address _account,
         uint256 _cursor,
         uint256 _limit
-    ) external view returns (PostWithoutMappings[] memory posts, bool hasMore) {
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (PostWithoutMappings[] memory posts, bool hasMore)
+    {
         PostWithoutMappings[] memory postsToReturn;
 
         uint256 count = 0;
@@ -464,15 +440,15 @@ contract Chilling {
         if (endIndex < 0) {
             loopLimit = 0;
             postsToReturn = new PostWithoutMappings[](
-                uint256(endIndex) + _limit
+                uint256(endIndex + int256(_limit))
             );
         } else {
             loopLimit = uint256(endIndex);
             postsToReturn = new PostWithoutMappings[](_limit);
         }
 
-        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            Post storage post = s_addressToPosts[_account][i];
+        for (int256 i = startIndex; i >= int256(loopLimit); i--) {
+            Post storage post = s_addressToPosts[_account][uint256(i)];
 
             postsToReturn[count].index = post.index;
             postsToReturn[count].timestamp = post.timestamp;
@@ -496,10 +472,16 @@ contract Chilling {
         address _account,
         uint256 _cursor,
         uint256 _limit
-    ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        uint256 followersLength = s_addressToAccount[_account].followersCount;
-        address[] memory followersArray = s_addressToAccount[_account]
-            .followersArray;
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (UserAccountShort[] memory, bool hasMore)
+    {
+        UserAccount storage account = s_addressToAccount[_account];
+        uint256 followersLength = account.followersCount;
+        address[] memory followersArray = account.followersArray;
 
         return
             getAccountsWithPagination(
@@ -514,10 +496,16 @@ contract Chilling {
         address _account,
         uint256 _cursor,
         uint256 _limit
-    ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        uint256 followingsLength = s_addressToAccount[_account].followingsCount;
-        address[] memory followingsArray = s_addressToAccount[_account]
-            .followingsArray;
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (UserAccountShort[] memory, bool hasMore)
+    {
+        UserAccount storage account = s_addressToAccount[_account];
+        uint256 followingsLength = account.followingsCount;
+        address[] memory followingsArray = account.followingsArray;
 
         return
             getAccountsWithPagination(
@@ -533,11 +521,16 @@ contract Chilling {
         uint256 _index,
         uint256 _cursor,
         uint256 _limit
-    ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        uint256 likersLength = s_addressToPosts[_account][_index].likesCount;
-        address[] memory likesAddressesArray = s_addressToPosts[_account][
-            _index
-        ].likesAddressesArray;
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (UserAccountShort[] memory, bool hasMore)
+    {
+        Post storage post = s_addressToPosts[_account][_index];
+        uint256 likersLength = post.likesCount;
+        address[] memory likesAddressesArray = post.likesAddressesArray;
 
         return
             getAccountsWithPagination(
@@ -553,12 +546,16 @@ contract Chilling {
         uint256 _index,
         uint256 _cursor,
         uint256 _limit
-    ) external view returns (AccoutnShort[] memory, bool hasMore) {
-        uint256 dislikersLength = s_addressToPosts[_account][_index]
-            .dislikesCount;
-        address[] memory dislikesAddressesArray = s_addressToPosts[_account][
-            _index
-        ].dislikesAddressesArray;
+    )
+        external
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_account)
+        returns (UserAccountShort[] memory, bool hasMore)
+    {
+        Post storage post = s_addressToPosts[_account][_index];
+        uint256 dislikersLength = post.dislikesCount;
+        address[] memory dislikesAddressesArray = post.dislikesAddressesArray;
 
         return
             getAccountsWithPagination(
@@ -574,9 +571,9 @@ contract Chilling {
         uint256 _limit,
         uint256 _accountsLength,
         address[] memory _addressesArrayToLoop
-    ) internal view returns (AccoutnShort[] memory, bool hasMore) {
-        AccoutnShort[] memory accountsToReturn;
-        Account storage sender = s_addressToAccount[msg.sender];
+    ) internal view returns (UserAccountShort[] memory, bool hasMore) {
+        UserAccountShort[] memory accountsToReturn;
+        UserAccount storage sender = s_addressToAccount[msg.sender];
 
         uint256 count = 0;
         int256 startIndex = int256(_accountsLength) - 1 - int256(_cursor);
@@ -584,20 +581,22 @@ contract Chilling {
         uint256 loopLimit;
 
         if (startIndex < 0) {
-            return (new AccoutnShort[](0), false);
+            return (new UserAccountShort[](0), false);
         }
 
         if (endIndex < 0) {
             loopLimit = 0;
-            accountsToReturn = new AccoutnShort[](uint256(endIndex) + _limit);
+            accountsToReturn = new UserAccountShort[](
+                uint256(endIndex + int256(_limit))
+            );
         } else {
             loopLimit = uint256(endIndex);
-            accountsToReturn = new AccoutnShort[](_limit);
+            accountsToReturn = new UserAccountShort[](_limit);
         }
 
-        for (uint256 i = uint256(startIndex); i >= loopLimit; i--) {
-            address currentAccountAddress = _addressesArrayToLoop[i];
-            Account storage currentAcount = s_addressToAccount[
+        for (int256 i = startIndex; i >= int256(loopLimit); i--) {
+            address currentAccountAddress = _addressesArrayToLoop[uint256(i)];
+            UserAccount storage currentAcount = s_addressToAccount[
                 currentAccountAddress
             ];
 
@@ -614,5 +613,77 @@ contract Chilling {
         }
 
         return (accountsToReturn, endIndex <= 0 ? false : true);
+    }
+
+    function getPostComments(
+        address _user,
+        uint256 _index
+    )
+        public
+        view
+        onlySignedUpSender
+        onlySignedUpReceiver(_user)
+        returns (Comment[] memory)
+    {
+        return s_addressToPosts[_user][_index].comments;
+    }
+
+    /// used for testing only
+
+    function getAccountFollowingsArray()
+        public
+        view
+        returns (address[] memory)
+    {
+        return s_addressToAccount[msg.sender].followingsArray;
+    }
+
+    function getAccountFollowingsMap(
+        address _following
+    ) public view returns (uint256) {
+        return s_addressToAccount[msg.sender].followingsMap[_following];
+    }
+
+    function getAccountFollowersArray() public view returns (address[] memory) {
+        return s_addressToAccount[msg.sender].followersArray;
+    }
+
+    function getAccountFollowersMap(
+        address _follower
+    ) public view returns (uint256) {
+        return s_addressToAccount[msg.sender].followersMap[_follower];
+    }
+
+    function getPostLikesAddressesArray(
+        uint256 _index
+    ) public view returns (address[] memory) {
+        return s_addressToPosts[msg.sender][_index].likesAddressesArray;
+    }
+
+    function getPostLikesAddressesMap(
+        uint256 _index,
+        address _liker
+    ) public view returns (uint256) {
+        return s_addressToPosts[msg.sender][_index].likesAddressesMap[_liker];
+    }
+
+    function getPostDislikesAddressesArray(
+        uint256 _index
+    ) public view returns (address[] memory) {
+        return s_addressToPosts[msg.sender][_index].dislikesAddressesArray;
+    }
+
+    function getPostDislikesAddressesMap(
+        uint256 _index,
+        address _disliker
+    ) public view returns (uint256) {
+        return
+            s_addressToPosts[msg.sender][_index].dislikesAddressesMap[
+                _disliker
+            ];
+    }
+
+    function getUserPostsLength(address _user) public view returns (uint256) {
+        return s_addressToPosts[_user].length;
     }
 }
