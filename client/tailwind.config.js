@@ -1,7 +1,7 @@
-import colors from "tailwindcss/colors";
+// import colors from "tailwindcss/";
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class',
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,26 +10,28 @@ module.exports = {
   theme: {
     container: {
       center: true,
-      padding: '2rem',
+      padding: "2rem",
     },
     extend: {
       colors: {
         mainOne: {
           light: "#C6FFDD",
-          dark: '#000',
+          dark: "#000",
         },
         mainTwo: {
           light: "#FBD786",
-          dark: '#000',
+          dark: "#000",
         },
         mainThree: {
           light: "#f7797d",
-          dark: '#000',
-        }
+          dark: "#000",
+        },
       },
-      spacing: {
-        '20': '20px'
-      }
+      spacing: {},
+      fontSize: {
+        text: "24px",
+        header: "48px",
+      },
     },
   },
 };

@@ -1,10 +1,11 @@
+import { Container } from "@/components/common/Container";
 import { HeaderPublic } from "@/components/HeaderPublic";
 
 const PublicLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="w-full h-full">
       <HeaderPublic />
-      {children}
+      <Container>{children}</Container>
     </div>
   );
 };

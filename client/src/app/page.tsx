@@ -3,8 +3,8 @@
 import { Averia_Sans_Libre } from "next/font/google";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/Button";
-import Logo from "@/components/Logo/Logo";
+import { Button } from "@/components/common/Button";
+import Logo from "@/components/common/Logo/Logo";
 import { BIG_LOGO_SIZE, WELCOME_PAGE_BUTTONS } from "@/constants";
 
 const font = Averia_Sans_Libre({ weight: "400", subsets: ["latin"] });

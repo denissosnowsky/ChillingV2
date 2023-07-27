@@ -2,12 +2,12 @@
 
 import { HomeButton } from "@/components/HomeButton";
 
-const HeaderPublic = (): JSX.Element => {
+const HeaderPrivate = (): JSX.Element => {
   return (
-    <div className="flex p-5 w-full">
+    <div className="flex p-4 w-full">
       <HomeButton />
     </div>
   );
 };
 
-export default HeaderPublic;
+export default HeaderPrivate;

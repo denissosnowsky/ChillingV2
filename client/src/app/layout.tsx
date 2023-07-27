@@ -20,7 +20,7 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body
-        className={`text-4xl h-screen bg-gradient-to-b from-mainOne-light via-mainTwo-light to-mainThree-light ${font.className}`}
+        className={`text-2xl h-screen bg-gradient-to-b from-mainOne-light via-mainTwo-light to-mainThree-light ${font.className}`}
       >
         <Providers>{children}</Providers>
       </body>

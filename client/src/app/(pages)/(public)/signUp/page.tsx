@@ -1,7 +1,11 @@
+import { WalletNote } from "@/components/WalletNote";
+
 const SignUp = (): JSX.Element => {
+  const isAuthorized = false;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      SignUp
+    <main className="flex flex-col items-center">
+      {isAuthorized ? <>SignUp</> : <WalletNote />}
     </main>
   );
 };
