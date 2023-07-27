@@ -3,7 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inconsolata } from "next/font/google";
 
-import { Providers } from "./providers";
+import { Providers } from "@/providers";
 
 const font = Inconsolata({ subsets: ["latin"] });
 
@@ -20,7 +20,7 @@ const RootLayout = ({
   return (
     <html lang="en">
       <body
-        className={`bg-gradient-to-b from-mainOne-light via-mainTwo-light to-mainThree-light ${font.className}`}
+        className={`text-4xl h-screen bg-gradient-to-b from-mainOne-light via-mainTwo-light to-mainThree-light ${font.className}`}
       >
         <Providers>{children}</Providers>
       </body>
