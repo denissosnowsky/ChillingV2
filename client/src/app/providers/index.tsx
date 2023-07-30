@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { MoralisProvider } from "react-moralis";
 
@@ -7,5 +7,7 @@ export const Providers = ({
 }: {
   children: React.ReactNode;
 }): JSX.Element => (
-  <MoralisProvider initializeOnMount={false}>{children}</MoralisProvider>
+  <>
+    <MoralisProvider initializeOnMount={false}>{children}</MoralisProvider>
+  </>
 );

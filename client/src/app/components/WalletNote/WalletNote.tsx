@@ -10,7 +10,9 @@ const WalletNote = (): JSX.Element => {
 
   return (
     <div className="pt-16 flex flex-col items-center">
-      <div className="mb-11">Please connect to MetaMask to proceed</div>
+      <div className="mb-11">
+        Please connect to MetaMask in your browser to proceed
+      </div>
       <div className="flex flex-col gap-4 items-center">
         <Button
           text="Connect to MetaMask"

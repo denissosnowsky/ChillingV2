@@ -15,7 +15,7 @@ const HomeButton = (): JSX.Element => {
     <Button
       text="Home"
       onClick={onNavigateHome}
-      color="yellow"
+      color="green"
       theme="colored"
       size="large"
       icon={<Home fontSize={BUTTON_FONT_SIZE} />}

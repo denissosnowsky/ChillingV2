@@ -26,6 +26,12 @@ module.exports = {
           light: "#f7797d",
           dark: "#000",
         },
+        mainFour: {
+          light: "rgb(0, 209, 174)",
+        },
+        mainFive: {
+          light: "rgb(11, 114, 196)",
+        },
       },
       spacing: {},
       fontSize: {

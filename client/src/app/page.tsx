@@ -22,11 +22,11 @@ const Home = (): JSX.Element => {
         children="Welcome to Chilling"
       />
       <div className="flex justify-center gap-3">
-        {WELCOME_PAGE_BUTTONS.map(({ color, text, href }, index) => (
+        {WELCOME_PAGE_BUTTONS.map(({ text, href }, index) => (
           <Button
             key={index}
             text={text}
-            color={color}
+            color="green"
             theme="colored"
             size="xl"
             onClick={onNavigate(href)}

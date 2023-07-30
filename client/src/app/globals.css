@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .page {
+    @apply flex flex-col pt-7 pb-7;
+    height: calc(100vh - 80px);
+  }
+
+  .step {
+    @apply flex flex-col;
+    height: 70vh;
+  }
+}
+
+body {
+  font-size: 20px;
+}
+
+div[data-testid="test-textarea-wrapper"] {
+  background-color: transparent;
+  height: 200px;
+  width: 50%;
+  overflow: auto;
+}
+
+div[data-testid="ttest-upload"]:hover {
+  background-color: red !important;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  border-radius: 10px;
+}
+
+input, textarea {
+  resize: none;
+  font-size: 20px!important;
+}
+
+.input strong {
+  text-align: start;
+}

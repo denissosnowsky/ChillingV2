@@ -1,11 +1,12 @@
+import { SignUpStepper } from "@/components/SignUpStepper";
 import { WalletNote } from "@/components/WalletNote";
 
 const SignUp = (): JSX.Element => {
-  const isAuthorized = false;
+  const isConnectedToWallet = true;
 
   return (
-    <main className="flex flex-col items-center">
-      {isAuthorized ? <>SignUp</> : <WalletNote />}
+    <main className="page h-fit">
+      {isConnectedToWallet ? <SignUpStepper /> : <WalletNote />}
     </main>
   );
 };
