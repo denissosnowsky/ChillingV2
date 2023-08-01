@@ -4,13 +4,24 @@
 
 @layer components {
   .page {
-    @apply flex flex-col pt-7 pb-7;
+    @apply w-full;
     height: calc(100vh - 80px);
+  }
+
+  .privateContainer {
+    overflow: auto;
+    margin: 0 auto;
+    padding-left: 35rem;
+    padding-right: 35rem;
   }
 
   .step {
     @apply flex flex-col;
-    height: 70vh;
+    height: 60vh;
+  }
+
+  .publicContainer {
+    @apply pr-40 pl-40 flex flex-col items-center;
   }
 }
 
@@ -21,8 +32,11 @@ body {
 div[data-testid="test-textarea-wrapper"] {
   background-color: transparent;
   height: 200px;
-  width: 50%;
   overflow: auto;
+}
+
+.step div[data-testid="test-textarea-wrapper"] {
+  width: 70%;
 }
 
 div[data-testid="ttest-upload"]:hover {
@@ -43,9 +57,10 @@ div[data-testid="ttest-upload"]:hover {
   border-radius: 10px;
 }
 
-input, textarea {
+input,
+textarea {
   resize: none;
-  font-size: 20px!important;
+  font-size: 20px !important;
 }
 
 .input strong {

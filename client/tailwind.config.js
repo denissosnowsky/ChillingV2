@@ -1,4 +1,3 @@
-// import colors from "tailwindcss/";
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -8,10 +7,6 @@ module.exports = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-    },
     extend: {
       colors: {
         mainOne: {
@@ -31,6 +26,9 @@ module.exports = {
         },
         mainFive: {
           light: "rgb(11, 114, 196)",
+        },
+        secondary: {
+          light: "#555",
         },
       },
       spacing: {},

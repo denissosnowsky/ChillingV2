@@ -2,7 +2,14 @@ import { WelcomePageButton } from "@/types";
 
 export const BIG_LOGO_SIZE = 300;
 export const MIDIUM_LOGO_SIZE = 150;
-export const BUTTON_FONT_SIZE = 20;
+export const SMALL_LOGO_SIZE = 40;
+
+export const SMALL_BUTTON_FONT_SIZE = 20;
+export const MEDIUM_BUTTON_FONT_SIZE = 30;
+
+export const SMALL_AVATAR_SIZE = 40;
+export const MEDIUM_AVATAR_SIZE = 70;
+export const LARGE_AVATAR_SIZE = 210;
 
 export const WELCOME_PAGE_BUTTONS: WelcomePageButton[] = [
   { text: "Sign Up", href: "/signUp" },
