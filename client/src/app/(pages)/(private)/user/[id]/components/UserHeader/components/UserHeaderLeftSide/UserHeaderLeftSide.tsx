@@ -1,3 +1,5 @@
+'use client'
+
 import { Edit } from "@web3uikit/icons";
 import { Tokens } from "@web3uikit/icons";
 

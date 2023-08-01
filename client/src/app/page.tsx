@@ -1,16 +1,26 @@
 "use client";
 
+import { useMoralis } from "react-moralis";
 import { Averia_Sans_Libre } from "next/font/google";
 import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/common/Button";
 import Logo from "@/components/common/Logo/Logo";
 import { BIG_LOGO_SIZE, WELCOME_PAGE_BUTTONS } from "@/constants";
+import { useEffect } from "react";
 
 const font = Averia_Sans_Libre({ weight: "400", subsets: ["latin"] });
 
 const Home = (): JSX.Element => {
+  const { account } = useMoralis();
   const router = useRouter();
+
+  /* useEffect(() => {
+    if (!!account) {
+      redirect("/user/1");
+    }
+  }, [account]); */
 
   const onNavigate = (href: string) => () => router.push(href);
 

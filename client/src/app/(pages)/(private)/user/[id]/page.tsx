@@ -1,3 +1,5 @@
+'use client'
+
 import { Footer } from "@/components/Footer";
 import { UserHeader } from "./components/UserHeader";
 import { UserPosts } from "./components/UserPosts";

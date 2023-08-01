@@ -1,15 +1,26 @@
-import { UserInfoStepper } from "@/components/UserInfoStepper";
+"use client";
+
+import { useIsConnectedToWeb3 } from "@/hooks";
 import { WalletNote } from "@/components/WalletNote";
+import { UserInfoStepper } from "@/components/UserInfoStepper";
+import { FullScreenSpinner } from "@/components/common/FullScreenSpinner";
 
 const SignUp = (): JSX.Element => {
-  const isConnectedToWallet = true;
+  const { isConnectedToAccount, isWeb3EnableLoading, connectToWallet } =
+    useIsConnectedToWeb3();
 
   return (
-    <main className="page h-fit flex flex-col pt-7 pb-7">
-      {isConnectedToWallet ? (
-        <UserInfoStepper action="creation" />
+    <main className="page flex flex-col pt-7 pb-7">
+      {isWeb3EnableLoading ? (
+        <FullScreenSpinner className="mb-20" />
       ) : (
-        <WalletNote />
+        <>
+          {isConnectedToAccount ? (
+            <UserInfoStepper action="creation" />
+          ) : (
+            <WalletNote onClick={connectToWallet} />
+          )}
+        </>
       )}
     </main>
   );
