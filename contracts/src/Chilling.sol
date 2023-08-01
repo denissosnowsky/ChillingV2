@@ -377,7 +377,16 @@ contract Chilling is ChillingStruct {
             revert Chilling__PostDoesNotExists();
         }
 
-        posts[_index].comments.push(Comment({text: _text, author: msg.sender}));
+        UserAccount storage user = s_addressToAccount[msg.sender];
+
+        posts[_index].comments.push(
+            Comment({
+                text: _text,
+                author: msg.sender,
+                name: user.name,
+                image: user.image
+            })
+        );
 
         emit CommentCreated();
     }

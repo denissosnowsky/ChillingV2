@@ -1327,6 +1327,14 @@ contract ChillingTest is Test, ChillingStruct {
             keccak256(abi.encodePacked(comments[0].text)) ==
                 keccak256(abi.encodePacked(COMMENT_TEXT))
         );
+        assert(
+            keccak256(abi.encodePacked(comments[0].name)) ==
+                keccak256(abi.encodePacked(USER_NAME))
+        );
+        assert(
+            keccak256(abi.encodePacked(comments[0].image)) ==
+                keccak256(abi.encodePacked(USER_IMAGE))
+        );
         assert(comments[0].author == RECEIVER);
     }
 

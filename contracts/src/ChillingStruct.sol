@@ -6,6 +6,8 @@ contract ChillingStruct {
     struct Comment {
         string text;
         address author;
+        string name;
+        string image;
     }
 
     /// mappings maps address to its index+1 in the appropriate array
