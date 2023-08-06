@@ -1,6 +1,7 @@
 "use client";
 
 import { MoralisProvider } from "react-moralis";
+import { NotificationProvider } from "@web3uikit/core";
 
 import { MoralisAuthWrapper } from "./MoralisAuthWrapper";
 
@@ -12,7 +13,9 @@ export const Providers = ({
   return (
     <>
       <MoralisProvider initializeOnMount={false}>
-        <MoralisAuthWrapper>{children}</MoralisAuthWrapper>
+        <NotificationProvider>
+          <MoralisAuthWrapper>{children}</MoralisAuthWrapper>
+        </NotificationProvider>
       </MoralisProvider>
     </>
   );

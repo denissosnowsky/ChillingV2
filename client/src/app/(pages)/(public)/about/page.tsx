@@ -1,5 +1,5 @@
 import Logo from "@/components/common/Logo/Logo";
-import { MIDIUM_LOGO_SIZE, aboutText } from "@/constants";
+import { MIDIUM_LOGO_SIZE, aboutText } from "@/constants/common";
 
 const About = (): JSX.Element => {
   return (

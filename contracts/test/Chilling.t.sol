@@ -613,6 +613,7 @@ contract ChillingTest is Test, ChillingStruct {
         assert(post.timestamp == block.timestamp);
         assert(post.likesCount == 0);
         assert(post.dislikesCount == 0);
+        assert(post.commentsCount == 0);
         assert(post.author == USER);
         assert(
             keccak256(abi.encodePacked(post.image)) ==
@@ -1336,6 +1337,11 @@ contract ChillingTest is Test, ChillingStruct {
                 keccak256(abi.encodePacked(USER_IMAGE))
         );
         assert(comments[0].author == RECEIVER);
+
+        vm.prank(USER);
+        (PostWithoutMappings[] memory posts,) = chilling.getAccountPosts(USER, 0, 10);
+
+        assert(posts[0].commentsCount == 1);
     }
 
     /// Get account count

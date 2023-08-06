@@ -200,6 +200,7 @@ contract Chilling is ChillingStruct {
         posts[postsLength].timestamp = block.timestamp;
         posts[postsLength].likesCount = 0;
         posts[postsLength].dislikesCount = 0;
+        posts[postsLength].commentsCount = 0;
         posts[postsLength].image = _image;
         posts[postsLength].text = _text;
         posts[postsLength].author = msg.sender;
@@ -387,6 +388,7 @@ contract Chilling is ChillingStruct {
                 image: user.image
             })
         );
+        posts[_index].commentsCount++;
 
         emit CommentCreated();
     }
@@ -463,6 +465,7 @@ contract Chilling is ChillingStruct {
             postsToReturn[count].timestamp = post.timestamp;
             postsToReturn[count].likesCount = post.likesCount;
             postsToReturn[count].dislikesCount = post.dislikesCount;
+            postsToReturn[count].commentsCount = post.commentsCount;
             postsToReturn[count].author = post.author;
             postsToReturn[count].image = post.image;
             postsToReturn[count].text = post.text;
@@ -486,7 +489,7 @@ contract Chilling is ChillingStruct {
         view
         onlySignedUpSender
         onlySignedUpReceiver(_account)
-        returns (UserAccountShort[] memory, bool hasMore)
+        returns (UserAccountShort[] memory users, bool hasMore)
     {
         UserAccount storage account = s_addressToAccount[_account];
         uint256 followersLength = account.followersCount;
@@ -510,7 +513,7 @@ contract Chilling is ChillingStruct {
         view
         onlySignedUpSender
         onlySignedUpReceiver(_account)
-        returns (UserAccountShort[] memory, bool hasMore)
+        returns (UserAccountShort[] memory users, bool hasMore)
     {
         UserAccount storage account = s_addressToAccount[_account];
         uint256 followingsLength = account.followingsCount;
@@ -535,7 +538,7 @@ contract Chilling is ChillingStruct {
         view
         onlySignedUpSender
         onlySignedUpReceiver(_account)
-        returns (UserAccountShort[] memory, bool hasMore)
+        returns (UserAccountShort[] memory users, bool hasMore)
     {
         Post storage post = s_addressToPosts[_account][_index];
         uint256 likersLength = post.likesCount;
@@ -560,7 +563,7 @@ contract Chilling is ChillingStruct {
         view
         onlySignedUpSender
         onlySignedUpReceiver(_account)
-        returns (UserAccountShort[] memory, bool hasMore)
+        returns (UserAccountShort[] memory users, bool hasMore)
     {
         Post storage post = s_addressToPosts[_account][_index];
         uint256 dislikersLength = post.dislikesCount;
@@ -632,7 +635,7 @@ contract Chilling is ChillingStruct {
         view
         onlySignedUpSender
         onlySignedUpReceiver(_user)
-        returns (Comment[] memory)
+        returns (Comment[] memory comments)
     {
         return s_addressToPosts[_user][_index].comments;
     }

@@ -1,19 +1,31 @@
 "use client";
 
+import { useContext } from "react";
+
+import { BalanceContext } from "@/contexts";
 import { Avatar } from "@/components/common/Avatar";
 import { HomeButton } from "@/components/HomeButton";
 import { Address } from "@/components/common/Address";
 import { Balance } from "@/components/common/Balance";
-import { SMALL_AVATAR_SIZE, SMALL_LOGO_SIZE } from "@/constants";
+import { SMALL_AVATAR_SIZE } from "@/constants/common";
 
-const HeaderPrivate = (): JSX.Element => {
+type HeaderPrivateProps = {
+  image: string;
+  address: string;
+};
+
+const HeaderPrivate = ({ image, address }: HeaderPrivateProps): JSX.Element => {
+  const { balance } = useContext(BalanceContext);
+
   return (
     <div className="flex p-5 w-full justify-between">
       <HomeButton />
       <div className="flex h-full justify-between gap-6">
-        <Balance />
-        <Address address="0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d" />
-        <Avatar size={SMALL_AVATAR_SIZE} />
+        <Balance balance={balance} />
+        <Address address={address} />
+        <div className="h-10 w-10">
+          <Avatar size={SMALL_AVATAR_SIZE} src={image} />
+        </div>
       </div>
     </div>
   );

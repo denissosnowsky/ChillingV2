@@ -3,21 +3,21 @@
 import { Modal as ModalWeb3 } from "@web3uikit/core";
 
 type ModalProps = {
+  width?: string;
   headerText: string;
   isVisible: boolean;
   content?: React.ReactNode;
-  width?: string;
   onOk?: () => void;
   onCloseButtonPressed?: () => void;
 };
 
 const Modal = ({
-  headerText,
-  isVisible,
-  width,
-  onCloseButtonPressed,
-  content,
   onOk,
+  width,
+  content,
+  isVisible,
+  headerText,
+  onCloseButtonPressed,
 }: ModalProps): JSX.Element => {
   const customize = {
     fontSize: "20px",

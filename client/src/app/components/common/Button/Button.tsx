@@ -2,7 +2,7 @@
 
 import { CSSProperties } from "react";
 
-import { SMALL_BUTTON_FONT_SIZE } from "@/constants";
+import { SMALL_BUTTON_FONT_SIZE } from "@/constants/common";
 import {
   ButtonProps as Web3ButtonProps,
   Button as Web3Button,

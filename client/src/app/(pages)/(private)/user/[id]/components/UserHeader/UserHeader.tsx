@@ -1,44 +1,120 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 
-import { UsersModal } from "@/components/UsersModal";
+import { UseFetchUsers } from "@/types";
+import { BalanceContext } from "@/contexts";
+import { TransferModal } from "@/components/TransferModal";
 import { SettingsModal } from "@/components/SettingsModal";
+import { CreatePostModal } from "@/components/CreatePostModal";
+import { FollowersFollowingsModal } from "@/components/FollowersFollowingsModal";
 
 import { UserHeaderLeftSide } from "./components/UserHeaderLeftSide";
 import { UserHeaderRightSide } from "./components/UserHeaderRightSide";
 
-type UserHeaderProps = {};
+type UserHeaderProps = {
+  id: string;
+  name: string;
+  avatar: string;
+  isOwner: boolean;
+  description: string;
+  accountAddress: string;
+  followersCount: string;
+  followingsCount: string;
+  isSenderFollowing: boolean;
+  resetPostsToFirstPage: () => Promise<void>;
+};
 
-const UserHeader = ({}: UserHeaderProps): JSX.Element => {
-  const isOwner = false;
-  const isFollowing = false;
+const UserHeader = ({
+  id,
+  isOwner,
+  followersCount,
+  accountAddress,
+  name: initName,
+  followingsCount,
+  isSenderFollowing,
+  avatar: avatarInit,
+  resetPostsToFirstPage,
+  description: descriptionInit,
+}: UserHeaderProps): JSX.Element => {
+  const [name, setName] = useState(initName);
+  const [image, setImage] = useState(avatarInit);
+  const [description, setDescription] = useState(descriptionInit);
 
-  const [userModalHeaderText, setUserModalHeaderText] = useState("");
+  const { refetchBalance } = useContext(BalanceContext);
+
+  const [userModalHeaderText, setUserModalHeaderText] = useState<
+    "Followers" | "Followings" | ""
+  >("");
+  const [fetchUsersHook, setFetchUsersHook] = useState<
+    ((id: string) => UseFetchUsers) | null
+  >(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   const onCloseUserModal = () => setUserModalHeaderText("");
-  const onCloseSettinsModal = () => setIsSettingsModalOpen(false);
   const openSettingsModal = () => setIsSettingsModalOpen(true);
+  const openTransferModal = () => setIsTransferModalOpen(true);
+  const onCloseSettinsModal = () => setIsSettingsModalOpen(false);
+  const onCloseTransferModal = () => setIsTransferModalOpen(false);
+  const openCreatePostModal = () => setIsCreatePostModalOpen(true);
+  const onCloseCreatePostModal = () => setIsCreatePostModalOpen(false);
 
   return (
     <div className="w-full h-[270px] grid grid-cols-[1fr_2fr] gap-10">
-      <UserHeaderLeftSide isOwner={isOwner} />
-      <UserHeaderRightSide
+      <UserHeaderLeftSide
+        avatar={image}
         isOwner={isOwner}
-        isFollowing={isFollowing}
-        openUserModalWithHeaderText={setUserModalHeaderText}
+        openTransferModal={openTransferModal}
+        openCreatePostModal={openCreatePostModal}
+      />
+      <UserHeaderRightSide
+        id={id}
+        name={name}
+        isOwner={isOwner}
+        description={description}
+        followersCount={followersCount}
+        followingsCount={followingsCount}
+        isSenderFollowing={isSenderFollowing}
         openSettingsModal={openSettingsModal}
+        setFetchUsersHook={setFetchUsersHook}
+        openUserModalWithHeaderText={setUserModalHeaderText}
       />
-      <UsersModal
-        who={userModalHeaderText}
-        isVisible={!!userModalHeaderText}
-        onClose={onCloseUserModal}
-      />
-      <SettingsModal
-        isVisible={isSettingsModalOpen}
-        onClose={onCloseSettinsModal}
-      />
+      {userModalHeaderText && (
+        <FollowersFollowingsModal
+          id={id}
+          who={userModalHeaderText}
+          onClose={onCloseUserModal}
+          accountAddress={accountAddress}
+          useFetchUsers={fetchUsersHook!}
+          isVisible={!!userModalHeaderText}
+        />
+      )}
+      {isSettingsModalOpen && (
+        <SettingsModal
+          setName={setName}
+          setImage={setImage}
+          onClose={onCloseSettinsModal}
+          isVisible={isSettingsModalOpen}
+          setDescription={setDescription}
+        />
+      )}
+      {isCreatePostModalOpen && (
+        <CreatePostModal
+          onClose={onCloseCreatePostModal}
+          isVisible={isCreatePostModalOpen}
+          resetPostsToFirstPage={resetPostsToFirstPage}
+        />
+      )}
+      {isTransferModalOpen && (
+        <TransferModal
+          address={id}
+          onClose={onCloseTransferModal}
+          refetchBalance={refetchBalance}
+          isVisible={isTransferModalOpen}
+        />
+      )}
     </div>
   );
 };

@@ -15,16 +15,24 @@ type AvatarProps = {
 };
 
 const Avatar = ({ size, src }: AvatarProps): JSX.Element => {
-  const image = src || defaultImage;
-
   return (
-    <Image
-      alt="avatar"
-      src={image}
-      width={size}
-      height={size}
-      className="border-2 border-white rounded-full"
-    />
+    <>
+      {src ? (
+        <img
+          alt="avatar"
+          src={src}
+          className="border-2 border-white rounded-full h-full w-full object-cover"
+        />
+      ) : (
+        <Image
+          alt="avatar"
+          src={defaultImage}
+          width={size}
+          height={size}
+          className="border-2 border-white rounded-full"
+        />
+      )}
+    </>
   );
 };
 

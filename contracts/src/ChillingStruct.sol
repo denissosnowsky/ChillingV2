@@ -17,6 +17,7 @@ contract ChillingStruct {
         uint256 timestamp;
         uint256 likesCount;
         uint256 dislikesCount;
+        uint256 commentsCount;
         address author;
         string image;
         string text;
@@ -48,6 +49,7 @@ contract ChillingStruct {
         uint256 timestamp;
         uint256 likesCount;
         uint256 dislikesCount;
+        uint256 commentsCount;
         address author;
         string image;
         string text;

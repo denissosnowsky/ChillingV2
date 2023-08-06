@@ -1,60 +1,114 @@
-'use client'
+"use client";
 
-import { Dispatch, SetStateAction } from "react";
 import { Cog } from "@web3uikit/icons";
+import { Dispatch, SetStateAction, useState } from "react";
 
+import { UseFetchUsers } from "@/types";
 import { Button } from "@/components/common/Button";
-import { MEDIUM_BUTTON_FONT_SIZE } from "@/constants";
+import { MEDIUM_BUTTON_FONT_SIZE } from "@/constants/common";
+import {
+  useFetchFollowers,
+  useFetchFollowings,
+  useFollow,
+  useUnfollow,
+} from "@/api/hooks";
 
 type UserHeaderRightSide = {
+  id: string;
+  name: string;
   isOwner: boolean;
-  isFollowing: boolean;
-  openUserModalWithHeaderText: Dispatch<SetStateAction<string>>;
+  description: string;
+  followersCount: string;
+  followingsCount: string;
+  isSenderFollowing: boolean;
   openSettingsModal: () => void;
+  openUserModalWithHeaderText: Dispatch<
+    SetStateAction<"Followers" | "Followings" | "">
+  >;
+  setFetchUsersHook: Dispatch<
+    SetStateAction<((id: string) => UseFetchUsers) | null>
+  >;
 };
 
 const UserHeaderRightSide = ({
+  id,
+  name,
   isOwner,
-  isFollowing,
+  description,
+  followersCount,
+  followingsCount,
+  setFetchUsersHook,
   openSettingsModal,
   openUserModalWithHeaderText,
+  isSenderFollowing: startingIsSenderFollowing,
 }: UserHeaderRightSide): JSX.Element => {
+  const [isSenderFollowing, setIsSenderFollowing] = useState(
+    startingIsSenderFollowing
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { followUser } = useFollow(setIsLoading, setIsSenderFollowing);
+  const { unfollowUser } = useUnfollow(setIsLoading, setIsSenderFollowing);
+
   const openFollowersModal = () => {
+    setFetchUsersHook(() => useFetchFollowers);
     openUserModalWithHeaderText("Followers");
   };
 
   const openFollowingsModal = () => {
+    setFetchUsersHook(() => useFetchFollowings);
     openUserModalWithHeaderText("Followings");
   };
 
+  const follow = () => {
+    setIsLoading(true);
+    followUser(id);
+  };
+
+  const unfollow = () => {
+    setIsLoading(true);
+    unfollowUser(id);
+  };
+
   return (
-    <div className="flex flex-col justify-between">
+    <div className="flex flex-col justify-between overflow-hidden">
       <div className=" flex flex-col h-[210px]">
         <div className="font-bold text-3xl mb-5 flex gap-3">
-          <span>Denys Sosnovskyi</span>
-          {!isOwner && isFollowing && (
-            <Button text="Unfollow" theme="colored" size="small" color="red" />
+          <span>{name}</span>
+          {!isOwner && isSenderFollowing && (
+            <Button
+              color="red"
+              size="small"
+              text="Unfollow"
+              theme="colored"
+              onClick={unfollow}
+              isLoading={isLoading}
+            />
           )}
-          {!isOwner && !isFollowing && (
-            <Button text="Follow" theme="colored" size="small" color="blue" />
+          {!isOwner && !isSenderFollowing && (
+            <Button
+              size="small"
+              color="blue"
+              text="Follow"
+              theme="colored"
+              onClick={follow}
+              isLoading={isLoading}
+            />
           )}
         </div>
-        <div className="text-lg overflow-auto">
-          Description - I am a software developer. Helloo, I am learning
-          blockchain, Solidity, Ethereum, JavaScript, React.
-        </div>
+        <div className="text-lg overflow-auto break-words">{description}</div>
       </div>
       <div className="flex items-center justify-around">
         <Button
           color="green"
-          text="0 Followers"
+          text={`${followersCount} Followers`}
           size="large"
           theme="colored"
           onClick={openFollowersModal}
         />
         <Button
           color="green"
-          text="0 Followings"
+          text={`${followingsCount} Followings`}
           size="large"
           theme="colored"
           onClick={openFollowingsModal}

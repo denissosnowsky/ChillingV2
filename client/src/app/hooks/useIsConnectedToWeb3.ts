@@ -1,28 +1,38 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useMoralis } from "react-moralis";
-import { LOCAL_STORAGE_CONFIG } from "@/constants";
+
+import { LOCAL_STORAGE_CONFIG } from "@/constants/common";
 
 type UseIsConnectedToWeb3 = {
+  account: string | null;
   isWeb3EnableLoading: boolean;
   isConnectedToAccount: boolean;
+  isAuthenticated: boolean;
   connectToWallet: () => Promise<void>;
 };
 
 export const useIsConnectedToWeb3 = (): UseIsConnectedToWeb3 => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const { enableWeb3, isWeb3Enabled, account, isWeb3EnableLoading } =
     useMoralis();
 
   const isConnectedToAccount = isWeb3Enabled && !!account;
 
   useLayoutEffect(() => {
-    if (isConnectedToAccount) return;
+    if (isConnectedToAccount) {
+      setIsAuthenticated(true);
+      return;
+    }
 
     const autoConnect = async () => {
       if (window && window.localStorage.getItem(LOCAL_STORAGE_CONFIG.key)) {
         await enableWeb3();
       }
+
+      setIsAuthenticated(true);
     };
 
     autoConnect();
@@ -39,8 +49,10 @@ export const useIsConnectedToWeb3 = (): UseIsConnectedToWeb3 => {
   };
 
   return {
-    isConnectedToAccount,
-    isWeb3EnableLoading,
+    account,
     connectToWallet,
+    isAuthenticated,
+    isWeb3EnableLoading,
+    isConnectedToAccount,
   };
 };

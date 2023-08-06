@@ -1,6 +1,7 @@
 "use client";
 
-import { Loading as Spinner } from "@web3uikit/core";
+import { BIG_SPINNER } from "@/constants";
+import { Spinner } from "@/components/common/Spinner";
 
 type FullScreenSpinnerProps = {
   className?: string;
@@ -9,11 +10,7 @@ type FullScreenSpinnerProps = {
 const FullScreenSpinner = ({
   className,
 }: FullScreenSpinnerProps): JSX.Element => {
-  return (
-    <div className={`h-full flex items-center justify-center ${className}`}>
-      <Spinner size={140} spinnerColor="#2E7DAF" />
-    </div>
-  );
+  return <Spinner className={className} size={BIG_SPINNER} />;
 };
 
 export default FullScreenSpinner;

@@ -7,6 +7,7 @@ import { StepLayout } from "../common";
 
 type FourthStepProps = StepsFunctions & {
   currentStep: STEPS;
+  isLoading: boolean;
   action: "creation" | "change";
 };
 

@@ -11,6 +11,9 @@ export const SMALL_AVATAR_SIZE = 40;
 export const MEDIUM_AVATAR_SIZE = 70;
 export const LARGE_AVATAR_SIZE = 210;
 
+export const BIG_SPINNER = 140;
+export const SMALL_SPINNER = 25;
+
 export const WELCOME_PAGE_BUTTONS: WelcomePageButton[] = [
   { text: "Sign Up", href: "/signUp" },
   { text: "Sign In", href: "/signIn" },
@@ -23,4 +26,15 @@ export const aboutText =
 export const LOCAL_STORAGE_CONFIG = {
   key: "connected",
   value: "injected",
+};
+
+export const NOTIFICATION_MESSAGES = {
+  signUpSuccess: "Successful sign up!",
+  defaultError: "Smething went wrong :(",
+  notSignedUp: "You are not signed up!",
+  userAlreadySignUp: "User is already signed up",
+  postCreated: "Post was created!",
+  moneySent: "Money successfully sent!",
+  commentCreated: "Comment created!",
+  notSupportedChain: "This chain is not supported!",
 };

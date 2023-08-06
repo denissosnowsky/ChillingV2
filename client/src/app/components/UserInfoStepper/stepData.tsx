@@ -6,7 +6,8 @@ export const stepData = (
   currentStep: STEPS,
   onNext: StepsFunctions["onNext"],
   onPrev: StepsFunctions["onPrev"],
-  action: "creation" | "change"
+  action: "creation" | "change",
+  isLoading: boolean
 ): SignUpStep[] => [
   {
     content: (
@@ -57,6 +58,7 @@ export const stepData = (
         key={STEPS.FOURTH}
         currentStep={currentStep}
         action={action}
+        isLoading={isLoading}
       />
     ),
     title: TITLES.fourthStep,

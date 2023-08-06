@@ -1,81 +1,111 @@
 "use client";
 
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { TextArea } from "@web3uikit/core";
 
+import { Comment } from "@/types";
+import { Empty } from "@/components/common/Empty";
 import { Avatar } from "@/components/common/Avatar";
 import { Button } from "@/components/common/Button";
-import { Empty } from "@/components/common/Empty";
-import { SMALL_AVATAR_SIZE } from "@/constants";
-import { ChangeEvent, useEffect, useState } from "react";
+import { SMALL_AVATAR_SIZE } from "@/constants/common";
+import { FullScreenSpinner } from "@/components/common/FullScreenSpinner";
+import { useCreateComment } from "@/api/hooks";
 
-const CommentModalContent = (): JSX.Element => {
-  const posts = [1, 2, 2, 2, 2];
+type CommentModalContentProps = {
+  index: string;
+  userId: string;
+  data: Comment[];
+  isLoading: boolean;
+  resetComments: () => Promise<void>;
+  setCommentsCount: Dispatch<SetStateAction<string>>;
+};
 
-  const [comment, setComment] = useState("");
+const CommentModalContent = ({
+  data,
+  index,
+  userId,
+  isLoading,
+  resetComments,
+  setCommentsCount,
+}: CommentModalContentProps): JSX.Element => {
+  const [isCommentCreateLoading, setIsCommentCreateLoading] = useState(false);
+  const [commentText, setCommentText] = useState("");
 
-  const onChangeComment = (e: ChangeEvent<HTMLTextAreaElement>) =>
-    setComment(e.target.value);
+  const onCommentCreate = () => {
+    setCommentsCount((prev) => String(Number(prev) + 1));
+  };
+
+  const { createPostComment } = useCreateComment(
+    setIsCommentCreateLoading,
+    resetComments,
+    onCommentCreate
+  );
 
   useEffect(() => {
     // no other way to focus third party library textarea
     const textarea = document.querySelector("textarea");
     textarea?.focus();
-    console.log(textarea);
   }, []);
 
+  const onChangeComment = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    setCommentText(e.target.value);
+
+  const onCreateComment = async () => {
+    setCommentText("");
+    setIsCommentCreateLoading(true);
+    await createPostComment(commentText, userId, index);
+  };
+
+  if (isLoading || isCommentCreateLoading) {
+    return (
+      <div className="flex flex-col">
+        <FullScreenSpinner className="mb-20" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-10 items-center">
-      <div className="w-full flex flex-col gap-2 items-center">
+    <div className="flex flex-col items-center">
+      <div className="w-full flex flex-col gap-2 items-center mb-10">
         <TextArea
-          value={comment}
+          width="100%"
+          autoComplete
+          value={commentText}
           onChange={onChangeComment}
           placeholder="Write comment..."
-          autoComplete
-          width="100%"
         />
         <Button
-          text="Send comment"
-          theme="colored"
           size="large"
           color="green"
-          disabled={!comment.length}
+          theme="colored"
+          text="Send comment"
+          onClick={onCreateComment}
+          disabled={!commentText.length}
         />
       </div>
-      {posts.length ? (
+      {data.length ? (
         <>
-          {posts.map((el, index) => (
-            <div key={index} className="flex flex-col">
+          {data.map(({ image, name, text }, index) => (
+            <div key={index} className="flex flex-col mb-10 w-full">
               <div className="flex gap-2 items-center">
                 <div>
-                  <Avatar size={SMALL_AVATAR_SIZE} />
+                  <Avatar size={SMALL_AVATAR_SIZE} src={image.trim()} />
                 </div>
-                <div>Denys Sosnovskyi</div>
+                <div>{name}</div>
               </div>
-              <div className=" text-base leading-6">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industrys standard dummy text
-                ever since the 1500s, when an unknown printer took a galley of
-                type and scrambled it to make a type specimen book. It has
-                survived not only five centuries, but also the leap into
-                electronic typesetting, remaining essentially unchanged. It was
-                popularised in the 1960s with the release of Letraset sheets
-                containing Lorem Ipsum passages, and more recently with desktop
-                publishing software like Aldus PageMaker including versions of
-                Lorem Ipsum.
-              </div>
+              <div className=" text-base leading-6">{text}</div>
             </div>
           ))}
-          <Button
-            text="Show more"
-            theme="colored"
-            size="large"
-            color="green"
-            style={{ marginBottom: 20 }}
-          />
         </>
       ) : (
         <div>
-          <Empty text="No users" className="mb-12" />
+          <Empty text="No comments" className="mb-12" />
         </div>
       )}
     </div>

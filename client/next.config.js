@@ -14,6 +14,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "d38b044pevnwc9.cloudfront.net",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

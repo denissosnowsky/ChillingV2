@@ -1,53 +1,64 @@
-import { Avatar } from "@/components/common/Avatar";
-import { Button } from "@/components/common/Button";
 import { Empty } from "@/components/common/Empty";
-import { MEDIUM_AVATAR_SIZE } from "@/constants";
+import { Button } from "@/components/common/Button";
+import { FullScreenSpinner } from "@/components/common/FullScreenSpinner";
+import { UserAccountShort } from "@/types";
 
-const UserModalContent = (): JSX.Element => {
-  const users = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-  const isOwnerFollowing = false;
+import UserListElement from "../UserListElement/UserListElement";
+
+type UserModalContentProps = {
+  hasMore: boolean;
+  isLoading: boolean;
+  accountAddress: string;
+  data: UserAccountShort[];
+  fetchMore: () => Promise<void>;
+};
+
+const UserModalContent = ({
+  data,
+  hasMore,
+  isLoading,
+  fetchMore,
+  accountAddress,
+}: UserModalContentProps): JSX.Element => {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col">
+        <FullScreenSpinner className="mb-20" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6 items-center">
-      {users.length ? (
+    <div className="flex flex-col items-center">
+      {data.length ? (
         <>
-          {users.map((user, index) => (
-            <div
-              className="w-full h-20 rounded-xl bg-mainOne-light flex items-center justify-between pl-4 pr-4"
-              key={index}
-            >
-              <div className="flex items-center gap-2">
-                <div>
-                  <Avatar size={MEDIUM_AVATAR_SIZE} />
-                </div>
-                <div>Denys Sosnovskyi</div>
-              </div>
-              <div>
-                {isOwnerFollowing ? (
-                  <Button
-                    text="Unfollow"
-                    theme="colored"
-                    size="small"
-                    color="red"
-                  />
-                ) : (
-                  <Button
-                    text="Follow"
-                    theme="colored"
-                    size="small"
-                    color="blue"
-                  />
-                )}
-              </div>
-            </div>
-          ))}
-          <Button
-            text="Show more"
-            theme="colored"
-            size="large"
-            color="green"
-            style={{ marginBottom: 20 }}
-          />
+          {data.map(
+            ({
+              accountAddress: userAddress,
+              name,
+              image,
+              isSenderFollowing,
+            }) => (
+              <UserListElement
+                name={name}
+                image={image}
+                key={userAddress}
+                userAddress={userAddress}
+                accountAddress={accountAddress}
+                isSenderFollowing={isSenderFollowing}
+              />
+            )
+          )}
+          {hasMore && (
+            <Button
+              text="Show more"
+              theme="colored"
+              size="large"
+              color="green"
+              style={{ marginBottom: 20 }}
+              onClick={fetchMore}
+            />
+          )}
         </>
       ) : (
         <div>

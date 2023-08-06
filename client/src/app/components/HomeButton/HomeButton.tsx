@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Home } from "@web3uikit/icons";
 
 import { Button } from "@/components/common/Button";
-import { SMALL_BUTTON_FONT_SIZE } from "@/constants";
+import { SMALL_BUTTON_FONT_SIZE } from "@/constants/common";
 
 const HomeButton = (): JSX.Element => {
   const router = useRouter();

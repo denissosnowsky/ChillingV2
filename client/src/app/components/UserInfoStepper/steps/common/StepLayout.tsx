@@ -8,6 +8,7 @@ type StepLayoutProps = StepsFunctions & {
   description: string;
   currentStep: STEPS;
   disabled?: boolean;
+  isLoading?: boolean;
 };
 
 const StepLayout = ({
@@ -17,6 +18,7 @@ const StepLayout = ({
   description,
   currentStep,
   disabled,
+  isLoading,
 }: StepLayoutProps): JSX.Element => {
   const isShowingPrevButton = currentStep !== STEPS.FIRST;
   const isLastStep = currentStep === STEPS.FOURTH;
@@ -44,7 +46,7 @@ const StepLayout = ({
           size="large"
           onClick={onNext}
           type={nextButtonType}
-          disabled={!!disabled}
+          disabled={!!disabled || !!isLoading}
         />
       </div>
     </div>

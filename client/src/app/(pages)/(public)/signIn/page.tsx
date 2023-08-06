@@ -1,28 +1,36 @@
 "use client";
 
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { redirect } from "next/navigation";
 
+import { useIsConnectedToWeb3 } from "@/hooks";
 import { WalletNote } from "@/components/WalletNote";
 import { FullScreenSpinner } from "@/components/common/FullScreenSpinner";
-import { useIsConnectedToWeb3 } from "@/hooks";
 
 const SignIn = (): JSX.Element => {
-  const { isConnectedToAccount, isWeb3EnableLoading, connectToWallet } =
-    useIsConnectedToWeb3();
+  const {
+    account,
+    connectToWallet,
+    isWeb3EnableLoading,
+    isConnectedToAccount,
+    isAuthenticated,
+  } = useIsConnectedToWeb3();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isConnectedToAccount) {
-      redirect("/user/1");
+      redirect(`/user/${account}`);
     }
-  }, [isConnectedToAccount]);
+  }, [isConnectedToAccount, account]);
+
+  const shouldShowLoading =
+    isWeb3EnableLoading || isConnectedToAccount || !isAuthenticated;
 
   return (
     <main className="page flex flex-col pt-7 pb-7">
-      {isWeb3EnableLoading ? (
+      {shouldShowLoading ? (
         <FullScreenSpinner className="mb-20" />
       ) : (
-        <>{!isConnectedToAccount && <WalletNote onClick={connectToWallet} />}</>
+        <WalletNote onClick={connectToWallet} />
       )}
     </main>
   );
