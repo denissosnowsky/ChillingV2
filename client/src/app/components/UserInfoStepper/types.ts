@@ -10,5 +10,5 @@ export type StepsFunctions = {
 export type StepperFormValues = {
   name: string;
   description: string;
-  photo: string;
+  photo: Blob | undefined;
 };

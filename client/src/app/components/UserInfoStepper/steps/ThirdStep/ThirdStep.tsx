@@ -22,8 +22,9 @@ const ThirdStep = (props: ThirdStepProps): JSX.Element => {
   };
 
   const choosePhoto = (file?: Blob | null) => {
-    // TODO: replace with real photo
-    setValue(STEPPER_FORM_FIELDS.photo, "");
+    if (file) {
+      setValue(STEPPER_FORM_FIELDS.photo, file);
+    }
   };
 
   return (

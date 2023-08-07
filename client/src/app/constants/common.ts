@@ -37,4 +37,7 @@ export const NOTIFICATION_MESSAGES = {
   moneySent: "Money successfully sent!",
   commentCreated: "Comment created!",
   notSupportedChain: "This chain is not supported!",
+  imageUploadError: "Image upload to IPFS failed!",
 };
+
+export const ipfsURI = "https://ipfs.io/ipfs";

@@ -1,10 +1,12 @@
-import defaultImage from "@/assets/user.png";
+import Image from "next/image";
+
 import {
   SMALL_AVATAR_SIZE,
   LARGE_AVATAR_SIZE,
   MEDIUM_AVATAR_SIZE,
+  ipfsURI,
 } from "@/constants";
-import Image from "next/image";
+import defaultImage from "@/assets/user.png";
 
 type AvatarProps = {
   size:
@@ -17,10 +19,10 @@ type AvatarProps = {
 const Avatar = ({ size, src }: AvatarProps): JSX.Element => {
   return (
     <>
-      {src ? (
+      {src?.trim() ? (
         <img
           alt="avatar"
-          src={src}
+          src={`${ipfsURI}/${src}`}
           className="border-2 border-white rounded-full h-full w-full object-cover"
         />
       ) : (

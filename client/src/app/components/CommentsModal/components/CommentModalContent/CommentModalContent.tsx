@@ -94,7 +94,7 @@ const CommentModalContent = ({
           {data.map(({ image, name, text }, index) => (
             <div key={index} className="flex flex-col mb-10 w-full">
               <div className="flex gap-2 items-center">
-                <div>
+                <div className="h-10 w-10">
                   <Avatar size={SMALL_AVATAR_SIZE} src={image.trim()} />
                 </div>
                 <div>{name}</div>

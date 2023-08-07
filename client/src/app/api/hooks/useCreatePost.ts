@@ -28,7 +28,7 @@ export const useCreatePost = (
       params: {
         params: {
           _text: text,
-          _image: image.length ? image : " ",
+          _image: image,
         },
       },
       onError: () => {

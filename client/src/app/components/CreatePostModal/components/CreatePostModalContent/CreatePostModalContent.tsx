@@ -1,10 +1,10 @@
-import { ChangeEvent, useEffect, useState } from "react";
 import { TextArea, Upload } from "@web3uikit/core";
+import { ChangeEvent, useEffect, useState } from "react";
 
 import { useCreatePost } from "@/api/hooks";
+import { useUploadImageToIpfs } from "@/hooks";
 import { Button } from "@/components/common/Button";
 import { FullScreenSpinner } from "@/components/common/FullScreenSpinner";
-
 
 type CreatePostModalContentProps = {
   onClose?: () => void;
@@ -15,6 +15,8 @@ const CreatePostModalContent = ({
   onClose,
   resetPostsToFirstPage,
 }: CreatePostModalContentProps): JSX.Element => {
+  const uploadImageToIpfs = useUploadImageToIpfs();
+
   const [isLoading, setIsLoading] = useState(false);
 
   const { createPost } = useCreatePost(
@@ -30,20 +32,23 @@ const CreatePostModalContent = ({
   };
 
   const [text, setText] = useState("");
-  const [photo, setPhoto] = useState<Blob | null>(null);
+  const [photo, setPhoto] = useState<Blob | undefined>(undefined);
 
   const onChangeText = (e: ChangeEvent<HTMLTextAreaElement>) =>
     setText(e.target.value);
 
   const onChangePhoto = (file?: Blob | null) => {
-    setPhoto(file ?? null);
+    setPhoto(file ?? undefined);
   };
 
   const submitPost = async () => {
     setIsLoading(true);
-    await createPost(text, "");
+
+    const finalImage = !!photo ? await uploadImageToIpfs(photo) : " ";
+
+    await createPost(text, finalImage);
     setText("");
-    setPhoto(null);
+    setPhoto(undefined);
   };
 
   useEffect(() => {

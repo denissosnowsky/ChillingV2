@@ -22,7 +22,7 @@ type UserInfoStepperProps = {
   submitMutation: (
     name: string,
     description: string,
-    image: string
+    image: Blob | undefined
   ) => Promise<void>;
 };
 
@@ -63,7 +63,13 @@ const UserInfoStepper = ({
           <form onSubmit={methods.handleSubmit(onSubmit)}>
             <Stepper
               step={startStep}
-              stepData={stepData(currentStep, onNext, onPrev, action, isSubmitMutationLoading)}
+              stepData={stepData(
+                currentStep,
+                onNext,
+                onPrev,
+                action,
+                isSubmitMutationLoading
+              )}
               hasNavButtons={false}
             />
           </form>

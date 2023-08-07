@@ -48,7 +48,7 @@ const UserListElement = ({
         className="flex items-center gap-2 cursor-pointer"
         onClick={navigateToUser}
       >
-        <div>
+        <div className="h-10 w-10">
           <Avatar size={MEDIUM_AVATAR_SIZE} src={image.trim()} />
         </div>
         <div>{name}</div>

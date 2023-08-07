@@ -1,19 +1,28 @@
-import { NOTIFICATION_MESSAGES } from "@/constants";
-import { useMakeNotification, useMakeQuery } from "@/hooks";
-import { useRouter } from "next/navigation";
+"use client";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import {
+  useMakeNotification,
+  useMakeQuery,
+  useUploadImageToIpfs,
+} from "@/hooks";
+import { NOTIFICATION_MESSAGES } from "@/constants";
 
 type UseStepperQueries = {
   signUpQuery: (
     name: string,
     description: string,
-    image: string
+    image: Blob | undefined
   ) => Promise<void>;
   signUpIsLoading: boolean;
 };
 
 export const useStepperQueries = (account: string): UseStepperQueries => {
   const router = useRouter();
+
+  const uploadImageToIpfs = useUploadImageToIpfs();
 
   const [isSigning, setIsSigning] = useState(false);
 
@@ -26,22 +35,28 @@ export const useStepperQueries = (account: string): UseStepperQueries => {
   } = useMakeQuery({
     functionName: "signUp",
   });
-  
-  const signUp = async (name: string, description: string, image: string) => {
+
+  const signUp = async (
+    name: string,
+    description: string,
+    image: Blob | undefined
+  ) => {
     setIsSigning(true);
+
+    const finalImage = !!image ? await uploadImageToIpfs(image) : " ";
 
     await signUpContractFunction({
       params: {
         params: {
           _name: name,
           _description: description.length ? description : " ",
-          _image: image.length ? image : " ",
+          _image: finalImage,
         },
       },
       onError: () => {
         setIsSigning(false);
         dispatchError(NOTIFICATION_MESSAGES.userAlreadySignUp);
-        router.push('/');
+        router.push("/");
       },
       onSuccess: async (tx) => {
         await dispatchTransaction(

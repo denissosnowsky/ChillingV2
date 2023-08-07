@@ -44,7 +44,7 @@ const SettingsModalContent = ({
   const submitChange = async (
     name: string,
     description: string,
-    image: string
+    image: Blob | undefined
   ) => {
     if (name) {
       setIsChangeNameLoading(true);

@@ -1,9 +1,12 @@
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
+import { LittleSpinner } from "@/components/common/LittleSpinner";
+
+import { StepLayout } from "../common";
 import { DESCRIPTIONS, STEPS } from "../../constants";
 import { StepperFormValues, StepsFunctions } from "../../types";
-import { StepLayout } from "../common";
 
 type FourthStepProps = StepsFunctions & {
   currentStep: STEPS;
@@ -12,16 +15,29 @@ type FourthStepProps = StepsFunctions & {
 };
 
 const FourthStep = (props: FourthStepProps): JSX.Element => {
+  const [preview, setPreview] = useState("");
+
   const { getValues } = useFormContext<StepperFormValues>();
 
   const { name, description, photo } = getValues();
 
-  const stepDescription =
-    props.action === "creation" ? DESCRIPTIONS.fourthStep : "";
   const userImageSize = 120;
   const emptyMessage = "--Empty--";
-  const validDescription = description || emptyMessage;
   const validName = name || emptyMessage;
+  const validDescription = description || emptyMessage;
+  const stepDescription =
+    props.action === "creation" ? DESCRIPTIONS.fourthStep : "";
+
+  useEffect(() => {
+    let objectUrl: string;
+
+    if (photo) {
+      objectUrl = URL.createObjectURL(photo);
+      setPreview(objectUrl);
+    }
+
+    return () => photo && URL.revokeObjectURL(objectUrl);
+  }, [photo]);
 
   return (
     <StepLayout {...props} description={stepDescription}>
@@ -35,12 +51,19 @@ const FourthStep = (props: FourthStepProps): JSX.Element => {
         <div>Photo:</div>
         <div className="justify-self-center">
           {photo ? (
-            <Image
-              alt="avatar"
-              src={photo}
-              width={userImageSize}
-              height={userImageSize}
-            />
+            <>
+              {preview ? (
+                <Image
+                  alt="avatar"
+                  src={preview ?? ""}
+                  width={userImageSize}
+                  height={userImageSize}
+                  className="rounded-full"
+                />
+              ) : (
+                <LittleSpinner />
+              )}
+            </>
           ) : (
             emptyMessage
           )}

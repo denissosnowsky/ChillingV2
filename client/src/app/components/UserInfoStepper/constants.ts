@@ -40,19 +40,19 @@ export const STEPPER_FORM_FIELDS: {
 export const STEPPER_DEFAULT_VALUES: StepperFormValues = {
   name: "",
   description: "",
-  photo: "",
+  photo: undefined,
 };
 
 export const STEPPER_FORM_VALIDATION_SCHEMA_WITH_REQUIRED_NAME = yup.object({
   [STEPPER_FORM_FIELDS.name]: yup.string().required(),
   [STEPPER_FORM_FIELDS.description]: yup.string() as yup.StringSchema<string>,
-  [STEPPER_FORM_FIELDS.photo]: yup.string() as yup.StringSchema<string>,
+  [STEPPER_FORM_FIELDS.photo]: yup.mixed<Blob>(),
 });
 
 export const STEPPER_FORM_VALIDATION_SCHEMA_WITHOUT_REQUIRED_NAME = yup.object({
   [STEPPER_FORM_FIELDS.name]: yup.string() as yup.StringSchema<string>,
   [STEPPER_FORM_FIELDS.description]: yup.string() as yup.StringSchema<string>,
-  [STEPPER_FORM_FIELDS.photo]: yup.string() as yup.StringSchema<string>,
+  [STEPPER_FORM_FIELDS.photo]: yup.mixed<Blob>(),
 });
 
 export const STEPPER_FORM_PLACEHOLDERS = {
