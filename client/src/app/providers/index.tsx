@@ -13,7 +13,7 @@ export const Providers = ({
 }): JSX.Element => {
   return (
     <>
-      <ThirdwebProvider clientId="0f32eea6bd0ab52fd3a9177d725e577b">
+      <ThirdwebProvider clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}>
         <MoralisProvider initializeOnMount={false}>
           <NotificationProvider>
             <MoralisAuthWrapper>{children}</MoralisAuthWrapper>
